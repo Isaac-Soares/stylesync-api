@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Importar Vendas - StyleSync{% endblock %}
+{% block page_title %}Upload de Vendas em Lote{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+    <div class="alert alert-info mb-4">
+        O sistema suporta a importação de arquivos no formato <strong>.CSV</strong> contendo dados das vendas.
+    </div>
+
+    <form id="uploadForm">
+        <div class="form-group border-dashed p-4 text-center" style="border: 2px dashed #333; border-radius: 8px;">
+            <label for="file" class="d-block mb-2" style="cursor:pointer;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d32f2f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg><br><br>
+                Selecione o arquivo CSV
+            </label>
+            <input type="file" id="file" name="file" accept=".csv" class="form-control" style="display:none;" required>
+            <div id="fileName" class="text-muted mt-2">Nenhum arquivo selecionado</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-4" id="uploadBtn">Enviar Arquivo</button>
+    </form>
+
+    <div id="uploadResults" class="mt-4" style="display:none;">
+        <h3>Resultado da Importação</h3>
+        <p id="resSuccess" class="text-success"></p>
+        <div id="resErrors" class="alert alert-error mt-2"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => checkAuth());
+
+    // Mostra o nome do arquivo selecionado
+    document.getElementById('file').addEventListener('change', function(e) {
+        const name = e.target.files[0] ? e.target.files[0].name : "Nenhum arquivo selecionado";
+        document.getElementById('fileName').textContent = name;
+    });
+
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('uploadBtn');
+        const token = getToken();
+        const fileInput = document.getElementById('file');
+        
+        if (!fileInput.files[0]) {
+            showFlash("Por favor, selecione um arquivo.", "error");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+
+        document.getElementById('uploadResults').style.display = 'none';
+        
+        try {
+            // A sua rota em main.py é /sales/upload
+            const response = await fetch("{{ url_for('main.upload_sales') }}", {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData // FormData seta o Content-Type como multipart/form-data automaticamente
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showFlash("Processamento concluído", "success");
+                
+                document.getElementById('uploadResults').style.display = 'block';
+                document.getElementById('resSuccess').textContent = `${data['vendas importadas']} vendas importadas com sucesso!`;
+                
+                const errorsDiv = document.getElementById('resErrors');
+                if (data['erros encontrados'] && data['erros encontrados'].length > 0) {
+                    errorsDiv.innerHTML = "<strong>Erros nas linhas:</strong><br>" + data['erros encontrados'].join("<br>");
+                    errorsDiv.style.display = 'block';
+                } else {
+                    errorsDiv.style.display = 'none';
+                }
+                
+                this.reset();
+                document.getElementById('fileName').textContent = "Nenhum arquivo selecionado";
+            } else {
+                showFlash(data.error || "Erro no upload", "error");
+            }
+        } catch (error) {
+            showFlash("Erro de conexão com o servidor", "error");
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Enviar Arquivo';
+        }
+    });
+</script>
+{% endblock %}

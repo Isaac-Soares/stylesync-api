@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - StyleSync{% endblock %}
+{% block page_title %}Visão Geral{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <div class="card stat-card">
+        <h3>Total de Produtos</h3>
+        <p class="stat-number" id="totalProducts">Carregando...</p>
+    </div>
+    
+    <div class="card">
+        <h3>Bem-vindo ao StyleSync</h3>
+        <p class="text-muted mt-2">Utilize o menu lateral para gerenciar os produtos e realizar integrações de vendas através de arquivos CSV.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        checkAuth();
+        try {
+            // A rota GET /products existe e nos dá a lista. Vamos extrair o tamanho.
+            const response = await fetch("{{ url_for('main.get_products') }}");
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('totalProducts').textContent = data.length;
+            } else {
+                document.getElementById('totalProducts').textContent = 'Erro';
+            }
+        } catch (e) {
+            document.getElementById('totalProducts').textContent = 'Erro';
+        }
+    });
+</script>
+{% endblock %}

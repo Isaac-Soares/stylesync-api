@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}StyleSync Admin{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Style<span class="text-red">Sync</span></h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('frontend.dashboard_view') }}" class="nav-link">Dashboard</a>
+                
+                <div class="nav-section">Produtos</div>
+                <a href="{{ url_for('frontend.products_list_view') }}" class="nav-link">Listar Produtos</a>
+                <a href="{{ url_for('frontend.products_create_view') }}" class="nav-link">Novo Produto</a>
+                
+                <div class="nav-section">Vendas</div>
+                <a href="{{ url_for('frontend.sales_upload_view') }}" class="nav-link">Importar Vendas (CSV)</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn btn-outline-danger w-100">Sair</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-title">
+                    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div id="flash-messages"></div>
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

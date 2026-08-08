@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Editar Produto - StyleSync{% endblock %}
+{% block page_title %}Editar Produto{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+    <div id="loadingMsg" class="text-center mb-3">Buscando dados do produto...</div>
+    
+    <form id="productForm" style="display:none;">
+        <!-- Campo Oculto para ID -->
+        <input type="hidden" id="productId">
+        
+        <div class="form-group">
+            <label for="name">Nome do Produto</label>
+            <input type="text" id="name" name="name" class="form-control">
+        </div>
+        
+        <div class="form-group row">
+            <div class="col-2">
+                <label for="price">Preço (R$)</label>
+                <input type="number" id="price" name="price" step="0.01" class="form-control">
+            </div>
+            <div class="col-2">
+                <label for="stock">Estoque</label>
+                <input type="number" id="stock" name="stock" class="form-control">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Descrição</label>
+            <textarea id="description" name="description" class="form-control" rows="4"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-end mt-4">
+            <a href="{{ url_for('frontend.products_list_view') }}" class="btn btn-outline mr-2">Cancelar</a>
+            <button type="submit" class="btn btn-primary" id="saveBtn">Atualizar Produto</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Recupera o ID extraído da URL pelo Flask
+    const productId = "{{ product_id }}";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        checkAuth();
+        
+        try {
+            const response = await fetch(`/product/${productId}`);
+            if (response.ok) {
+                const product = await response.json();
+                document.getElementById('productId').value = product._id;
+                document.getElementById('name').value = product.name;
+                document.getElementById('price').value = product.price;
+                document.getElementById('stock').value = product.stock;
+                document.getElementById('description').value = product.description || '';
+                
+                document.getElementById('loadingMsg').style.display = 'none';
+                document.getElementById('productForm').style.display = 'block';
+            } else {
+                document.getElementById('loadingMsg').innerHTML = '<span class="text-red">Produto não encontrado.</span>';
+            }
+        } catch (e) {
+            document.getElementById('loadingMsg').innerHTML = '<span class="text-red">Erro ao carregar.</span>';
+        }
+    });
+
+    document.getElementById('productForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('saveBtn');
+        const token = getToken();
+
+        // O backend espera um modelo UpdateProduct onde tudo é opcional.
+        const payload = {
+            name: this.name.value,
+            price: parseFloat(this.price.value),
+            stock: parseInt(this.stock.value),
+            description: this.description.value || null
+        };
+
+        btn.disabled = true;
+        btn.textContent = 'Atualizando...';
+
+        try {
+            const response = await fetch(`/product/${productId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showFlash("Produto atualizado com sucesso!", "success");
+            } else {
+                showFlash(JSON.stringify(data.error) || data.message || "Erro ao atualizar", "error");
+            }
+        } catch (error) {
+            showFlash("Erro de conexão com o servidor", "error");
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Atualizar Produto';
+        }
+    });
+</script>
+{% endblock %}

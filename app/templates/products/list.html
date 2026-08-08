@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Produtos - StyleSync{% endblock %}
+{% block page_title %}Lista de Produtos{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="d-flex justify-content-between mb-4 align-items-center">
+        <h2>Produtos Cadastrados</h2>
+        <a href="{{ url_for('frontend.products_create_view') }}" class="btn btn-primary">Adicionar Novo</a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table" id="productsTable">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Preço (R$)</th>
+                    <th>Estoque</th>
+                    <th>Descrição</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="productsBody">
+                <tr><td colspan="5" class="text-center">Carregando produtos...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        checkAuth();
+        await loadProducts();
+    });
+
+    async function loadProducts() {
+        const tbody = document.getElementById('productsBody');
+        try {
+            const response = await fetch("{{ url_for('main.get_products') }}");
+            const data = await response.json();
+            
+            tbody.innerHTML = '';
+            
+            if(data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum produto cadastrado.</td></tr>';
+                return;
+            }
+
+            data.forEach(product => {
+                // A rota backend envia "_id" como string
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${escapeHTML(product.name)}</td>
+                    <td>R$ ${product.price.toFixed(2)}</td>
+                    <td>${product.stock}</td>
+                    <td class="text-muted truncate">${product.description ? escapeHTML(product.description) : '-'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/view/product/edit/${product._id}" class="btn btn-sm btn-outline">Editar</a>
+                            <button onclick="deleteProduct('${product._id}')" class="btn btn-sm btn-outline-danger">Excluir</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red">Erro ao carregar os dados.</td></tr>';
+        }
+    }
+
+    async function deleteProduct(id) {
+        if(!confirm("Tem certeza que deseja excluir este produto?")) return;
+        
+        const token = getToken();
+        try {
+            const response = await fetch(`/product/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if(response.ok) {
+                showFlash("Produto excluído com sucesso!", "success");
+                loadProducts();
+            } else {
+                const data = await response.json();
+                showFlash(data.error || data.message || "Erro ao excluir", "error");
+            }
+        } catch(e) {
+            showFlash("Erro de comunicação com o servidor.", "error");
+        }
+    }
+</script>
+{% endblock %}
