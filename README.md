@@ -11,7 +11,7 @@ Você pode testar a aplicação e o painel administrativo rodando na nuvem atrav
 
 **Credenciais para avaliação:**
 - **Usuário:** `admin`
-- **Senha:** `[supersecret]`
+- **Senha:** `supersecret`
 
 *(Nota: Este é um ambiente de demonstração. Sinta-se à vontade para navegar pelo painel, cadastrar novos produtos, processar planilhas CSV e testar o controle de estoque).*
 
