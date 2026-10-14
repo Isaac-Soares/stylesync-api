@@ -4,9 +4,16 @@ Uma API RESTful desenvolvida com **Flask** e **MongoDB**, projetada com foco em 
 
 Este projeto demonstra a implementação de uma arquitetura utilizando o padrão **Application Factory**, integração com banco de dados NoSQL, autenticação baseada em **JWT** e testes automatizados.
 
-## 🚀 Acesso Online
-Você pode testar a API rodando na nuvem através do link:
-[Acesse o StyleSync API](https://stylesync-api-vytq.onrender.com)
+## 🚀 Acesso Online e Demonstração
+
+Você pode testar a aplicação e o painel administrativo rodando na nuvem através do link:
+👉 [Acessar o StyleSync](https://stylesync-api-vytq.onrender.com)
+
+**Credenciais para avaliação:**
+- **Usuário:** `admin`
+- **Senha:** `[supersecret]`
+
+*(Nota: Este é um ambiente de demonstração. Sinta-se à vontade para navegar pelo painel, cadastrar novos produtos, processar planilhas CSV e testar o controle de estoque).*
 
 ## 🚀 Tecnologias Utilizadas
 
